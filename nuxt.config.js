@@ -28,18 +28,19 @@ export default {
     components: true,
 
     // Modules for dev and build (recommended): https://go.nuxtjs.dev/config-modules
-    buildModules: [],
+    buildModules: [
+        // Simple usage
+        '@nuxtjs/vuetify',
+    ],
 
     // Modules: https://go.nuxtjs.dev/config-modules
     modules: [
-        // https://go.nuxtjs.dev/bootstrap
         'bootstrap-vue/nuxt',
-        // https://go.nuxtjs.dev/axios
         '@nuxtjs/axios',
+        '@nuxtjs/auth',
     ],
 
-    // Axios module configuration: https://go.nuxtjs.dev/config-axios
-    axios: {},
+
 
     // Build Configuration: https://go.nuxtjs.dev/config-build
     build: {
@@ -51,5 +52,33 @@ export default {
             ]
         }
     },
+
+
+    // Axios module configuration: https://go.nuxtjs.dev/config-axios
+    axios: {
+        baseURL: 'http://localhost:8000/api'
+    },
+
+    auth: {
+        localStorage: false,
+        cookie: {
+            prefix: 'auth.',
+            options: {
+                path: '/',
+                maxAge: 10800
+            }
+        },
+        strategies: {
+            local: {
+                endpoints: {
+                    login: { url: '/sessions', method: 'post', propertyName: 'token' },
+                    logout: { url: '/sessions', method: 'delete' },
+                    user: { url: '/sessions/user', method: 'get', propertyName: 'user' }
+                },
+                // tokenRequired: true,
+                tokenType: ''
+            }
+        }
+    }
 
 }

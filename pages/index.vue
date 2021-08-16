@@ -2,10 +2,14 @@
   <div class="container">
     <section id="page-top">
       <div class="d-flex justify-content-between align-items-center">
-        <img src="~/static/img/logo_atcs.jpg" alt="logo atcs association de tir de criquebeuf sur seine"/>
+        <img src="~/static/src/img/logo_atcs.png" alt="logo atcs association de tir de criquebeuf sur seine"/>
         <nuxt-link to="/connection" class="btn btn-light">
           Se connecter
         </nuxt-link>
+        <!-- TODO -->
+        <!--<v-btn text to="" v-if="$auth.user && $auth.user.admin">Panel Admin</v-btn>
+        <v-btn text to="" v-if="$auth.user && $auth.user.admin">Se Déconnecter</v-btn>-->
+        <!-- endTODO -->
       </div>
       <h1>Planning des permanences</h1>
     </section>

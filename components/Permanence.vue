@@ -1,6 +1,6 @@
 <template>
     <div class="col card">
-        <h3>{{ event }}</h3>
+        <h3>{{ evenement }}</h3>
         <p>{{ date }}</p>        
     </div>
 </template>
@@ -8,7 +8,7 @@
 <script>
     export default {
         name: 'Permanence',
-        props: ["week","type","date","event"],
+        props: ["type","evenement","semaine","date"],
     }
 </script>
 

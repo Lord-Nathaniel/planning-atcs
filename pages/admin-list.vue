@@ -2,7 +2,7 @@
     <div class="container">
         <section id="page-top">
             <div class="d-flex justify-content-between align-items-center">
-                <img src="~/static/img/logo_atcs.jpg" alt="logo atcs association de tir de criquebeuf sur seine"/>         
+                <img src="~/static/src/img/logo_atcs.png" alt="logo atcs association de tir de criquebeuf sur seine"/>         
                 <div class="d-flex flex-column">
                     <nuxt-link to="/admin-manager" class="btn btn-light">
                         Retour sur le gestionnaire
@@ -21,7 +21,9 @@
 
 
 <script>
-
+    export default {
+        middleware: 'auth'
+    }
 </script>
 
 <style scoped>
