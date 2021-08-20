@@ -7,20 +7,25 @@
                 Se connecter
                 </nuxt-link>
             </div>
-        <h1>Planning des permanences</h1>
+            <h1>Planning des permanences</h1>
         </section>
         <section id="page-planning" class="card">
-            <div id="planning" class="row row-cols-4">
-                <!--<div v-for="semaine in semaines" :key="semaine._id">
-                <h4>
-                    {{ numSemaine }}
-                </h4>
-                </div> -->       
-                <div class="card" v-for="permanence in permanences" :semaine="permanence.semaine" :date="permanence.date" :Type="permanence.Type" :Evenement="permanence.Evenement" :class="permanence.Evenement.etat" :key="permanence._id">    
-                    <h4>{{ permanence.Evenement.nom }}</h4>
-                    <p>{{ permanence.date }}</p>
-                </div>
+            <div id="day" class="row" :class="nbCol">
+                <div v-for="typ in types" :nom="typ.nom" :key="typ._id">
+                    <p><b>{{ typ.nom }}</b></p>
+                </div>  
             </div>
+            <div id="planning">
+                    <div class="col">
+                        <div v-for="semaine in semaines" class="row" :class="nbCol">
+                            <p class="d-flex align-items-center justify-content-center"><b>Semaine{{ semaine }}</b></p>
+                            <div class="card" v-for="permanence in permanences" :semaine="permanence.semaine" :date="permanence.date" :Type="permanence.Type" :Evenement="permanence.Evenement" :class="permanence.Evenement.etat" :key="permanence._id" v-if="permanence.semaine == semaine">
+                                <h4>{{ permanence.Evenement.nom }}</h4>
+                                <p>{{ permanence.date }}</p>
+                            </div>
+                        </div>                    
+                    </div>                
+                </div>
             <div id="legende" class="row row-cols-4">
                 <div class="d-flex flex-row">
                     <div id="carre-blanc"></div>
@@ -45,10 +50,22 @@ export default {
     data() {
         return {
             semaines:[],
-            permanences:[]
+            permanences:[],
+            types:[],
         }
     },
     methods:{
+        getTypes() { //fetch the evenements, save them in data => used to view and modify the evenement of a permanence            
+            this.$axios.get('http://localhost:8000/api/types', {
+                headers: {
+                    "content-type": "application/json",
+                    "accept": "application/json"
+                }
+            })
+            .then(response => {this.types = response.data;
+            this.types.unshift('');})
+            .catch(err => this.evenements = [{title : "Erreur de chargement"}]);
+        },
         getData() { //fetch the permanences, save them in data, changes the date format => used to view the permanences in the planning
             this.$axios.get('http://localhost:8000/api/permanences', {
                 headers: {
@@ -57,24 +74,31 @@ export default {
                 }
             })
             .then(response => {this.permanences = response.data;
-            console.log(this.permanences);
-            // let tempSemaine = '';
-            this.permanences.forEach(function(permanence) {
-                let tempdate = permanence.date.split(/-|T/);
-                permanence.date = tempdate[2]+"-"+tempdate[1]+"-"+tempdate[0];
-            //     console.log(permanence.semaine);
-            //     console.log(this.semaines);
-            //     if(this.permanences.semaine !== tempSemaine) {
-            //       tempSemaine = this.permanences.semaine;
-            //       this.semaines.push(tempSemaine);
-            //       };
-                })
+                let tempWeek=0;
+                let tempArray=[];
+                this.permanences.forEach(function(permanence) {
+                    let tempdate = permanence.date.split(/-|T/);
+                    permanence.date = tempdate[2]+"-"+tempdate[1]+"-"+tempdate[0];
+                    if (permanence.semaine !== tempWeek){
+                        tempWeek = permanence.semaine;
+                        tempArray.push(tempWeek);
+                    };                    
+                });
+                this.semaines=tempArray;
             })
             .catch(err => this.permanences = [{title : "Erreur de chargement"}]);
         }
     },
     mounted: function(){
-        this.getData();
+        this.getData();        
+        this.getTypes();
+    },
+    computed: {
+        nbCol: function() {            
+            let nbcol = this.types.length;
+            let url = "row-cols-" + nbcol;
+            return url;
+        }  
     }  
 } 
 </script>
@@ -136,6 +160,11 @@ export default {
     width: 30px;
     background-color: #818181;
     border: solid 0.5mm #000;
+}
+#day
+{
+    text-align: center;
+    margin-top: 5px; 
 }
 .indisponible
 {
