@@ -18,7 +18,7 @@
                   :rules="[required('password'), minLength('password', 4)]"
                   />
 
-    <v-btn @click="submitForm(userInfo)" :disabled="!valid">{{ buttonText }}</v-btn>
+    <v-btn @click="submitForm(userInfo)">{{ buttonText }}</v-btn>
   </v-form>
 </template>
 
@@ -30,7 +30,7 @@
         valid: false,
         showPassword: false,
         userInfo: {
-          email: 'adminatcs@atcs.fr',
+          username: 'adminatcs@atcs.fr',
           password: '@dm1n'
         },
         ...validations

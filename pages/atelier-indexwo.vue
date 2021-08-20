@@ -4,7 +4,7 @@
     </div>
 </template>
 <script>
-export default {
+/*export default {
     data() {
         return {
             message:'not logged in'
@@ -19,7 +19,7 @@ export default {
         
         this.message = 'Hello' + content.name;
     }
-}
+}*/
 </script>
 <style>
     

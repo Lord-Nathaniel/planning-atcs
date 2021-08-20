@@ -8,7 +8,7 @@
             Créer un post
         </button>
         <ul>
-            <li v-for="post in posts">
+            <li v-for="post in posts" :key="post._id">
                 {{ post.title }}
             </li>
         </ul>

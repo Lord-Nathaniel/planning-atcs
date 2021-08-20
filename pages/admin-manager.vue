@@ -1,4 +1,5 @@
 <template>
+<v-app>
   <div class="container">
     <section id="page-top">
       <div class="d-flex justify-content-between align-items-center">
@@ -14,14 +15,18 @@
       </div>
       <h1>Gestion des permanences</h1>
     </section>
-    <section id="page-planning">
-      <div id="planning" class="row row-cols-4">
-        <div v-for="plage in plages">
+    <section id="page-admin-manager" class="card">
+      <div id="admin-manager" class="row row-cols-4">
+        <!--<div v-for="plage in plages">
           <h4>
             {{ plage }}
           </h4>
-        </div>        
-        <Permanence v-for="permanence in permanences" :date="permanence.date" :event="permanence.event" :class="permanence.state" :key="permanence._id"/>
+        </div>-->   
+        <div class="card" v-for="permanence in permanences" :semaine="permanence.semaine" :date="permanence.date" :Type="permanence.Type" :Evenement="permanence.Evenement" :class="permanence.Evenement.etat" :key="permanence._id">
+          <v-select v-model="permanence.Evenement.id" :items="evenements" :reduce="evenements => evenement.id" name="evenements" item-text="nom" item-value="id" @input="updatePermanence(permanence.id,$event)">
+          </v-select>
+          <p>{{ permanence.date }}</p>
+        </div>
       </div>
       <div id="legende" class="row row-cols-4">
         <div class="d-flex flex-row">
@@ -39,14 +44,78 @@
       </div>
     </section>
   </div>
+  </v-app>
 </template>
 
 <script>
-  export default {
-    middleware: 'auth'
-  }
+export default {
+    data() {
+        return {
+          semaines:[],
+          permanences:[],
+          evenements:[],
+          test:'test'
+        }
+    },
+    methods:{
+        getEvents() {
+          this.$axios.get('http://localhost:8000/api/evenements', {
+              headers: {
+                  "content-type": "application/json",
+                  "accept": "application/json"
+              }
+          })
+            .then(response => {this.evenements = response.data})
+            .catch(err => this.evenements = [{title : "Erreur de chargement"}]);
+        },
+        getData() {
+          this.$axios.get('http://localhost:8000/api/permanences', {
+              headers: {
+                  "content-type": "application/json",
+                  "accept": "application/json"
+              }
+          })
+            .then(response => {this.permanences = response.data;
+            this.permanences.forEach(function(permanence) {
+                let tempdate = permanence.date.split(/-|T/);
+                permanence.date = tempdate[2]+"-"+tempdate[1]+"-"+tempdate[0];
+                })
+            })
+            .catch(err => this.permanences = [{title : "Erreur de chargement"}]);
+        },
+        updatePermanence(permanenceid, evenementid) {
+          let url ="/api/evenements/"+evenementid;
+          console.log("permanenceid= "+permanenceid+" / url= "+url);
+            this.$axios.put(`http://localhost:8000/api/permanences/${encodeURIComponent(permanenceid)}`, {
+                
+                  Evenement: url
+                 
+            }).then(function (response) {
+                console.log(response);
+                window.location.reload()
+            })
+            .catch(function (error) {
+                console.log(error);
+            });
+        }
+    },
+    mounted: function(){
+        this.getData();
+        this.getEvents();
+    }  
+} 
 </script>
 
 <style scoped>
-
+#admin-manager
+{
+  margin-top: 4px;
+  height: 300px;
+  overflow-y: scroll;
+}
+#admin-manager>.card
+{
+  margin-top: 4px;
+  padding-top: 4px;
+}
 </style>

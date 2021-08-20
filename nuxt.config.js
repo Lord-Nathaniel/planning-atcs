@@ -50,7 +50,15 @@ export default {
                 ["@babel/plugin-proposal-private-methods", { "loose": true }],
                 ["@babel/plugin-proposal-private-property-in-object", { "loose": true }]
             ]
-        }
+        },
+        loaders: {
+            vue: {
+                prettify: false
+            }
+        },
+        parallel: true,
+        cache: true,
+        hardSource: true
     },
 
 
@@ -62,22 +70,24 @@ export default {
     auth: {
         localStorage: false,
         cookie: {
-            prefix: 'auth.',
-            options: {
-                path: '/',
-                maxAge: 10800
-            }
+            localStorage: false,
+            cookie: {
+                options: {
+                    expires: 7
+                }
+            },
+            strategies: {
+                local: {
+                    endpoints: {
+                        login: { url: '/login', method: 'post', propertyName: false },
+                        logout: false,
+                        user: { url: '/utilisateurs', method: 'get', propertyName: false }
+                    },
+                    // tokenRequired: true,
+                    tokenType: ''
+                }
+            },
+            plugins: ['~/plugins/axios.js', { src: '~/plugins/auth.js', mode: 'client' }]
         },
-        strategies: {
-            local: {
-                endpoints: {
-                    login: { url: '/sessions', method: 'post', propertyName: 'token' },
-                    logout: { url: '/sessions', method: 'delete' },
-                    user: { url: '/sessions/user', method: 'get', propertyName: 'user' }
-                },
-                // tokenRequired: true,
-                tokenType: ''
-            }
-        }
     }
 }

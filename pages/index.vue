@@ -3,24 +3,23 @@
     <section id="page-top">
       <div class="d-flex justify-content-between align-items-center">
         <img src="~/static/src/img/logo_atcs.png" alt="logo atcs association de tir de criquebeuf sur seine"/>
-        <nuxt-link to="/connection" class="btn btn-light">
+        <nuxt-link to="/login" class="btn btn-light">
           Se connecter
         </nuxt-link>
-        <!-- TODO -->
-        <!--<v-btn text to="" v-if="$auth.user && $auth.user.admin">Panel Admin</v-btn>
-        <v-btn text to="" v-if="$auth.user && $auth.user.admin">Se Déconnecter</v-btn>-->
-        <!-- endTODO -->
       </div>
       <h1>Planning des permanences</h1>
     </section>
-    <section id="page-planning">
+    <section id="page-planning" class="card">
       <div id="planning" class="row row-cols-4">
-        <div v-for="plage in plages">
+        <!--<div v-for="semaine in semaines" :key="semaine._id">
           <h4>
-            {{ plage }}
+            {{ numSemaine }}
           </h4>
-        </div>        
-        <Permanence v-for="permanence in permanences" :date="permanence.date" :event="permanence.event" :class="permanence.state" :key="permanence._id"/>
+        </div> -->       
+        <div class="card" v-for="permanence in permanences" :semaine="permanence.semaine" :date="permanence.date" :Type="permanence.Type" :Evenement="permanence.Evenement" :class="permanence.Evenement.etat" :key="permanence._id">    
+          <h4>{{ permanence.Evenement.nom }}</h4>
+          <p>{{ permanence.date }}</p>
+        </div>
       </div>
       <div id="legende" class="row row-cols-4">
         <div class="d-flex flex-row">
@@ -41,55 +40,59 @@
 </template>
 
 <script>
-  import Permanence from '~/components/Permanence';
-
-  export default {
+export default {
     data() {
-      return {
-        plages: ["Lundi après-midi","Samedi matin","Samedi après-midi", "Dimanche matin"],
-        permanences: [
-          { week: 'Semaine 32', type: 'Lundi après-midi', date: '09/08/2021', event: 'M. Arnaud', state: 'available'},
-          { week: 'Semaine 32', type: 'Samedi matin', date: '14/08/2021', event: 'M. Arnaud', state: 'available'},
-          { week: 'Semaine 32', type: 'Samedi après-midi', date: '14/08/2021', event: 'N/A', state: 'unavailable'},
-          { week: 'Semaine 32', type: 'Dimanche matin', date: '15/08/2021', event: 'Fermé', state: 'closed'},
-
-          { week: 'Semaine 33', type: 'Lundi après-midi', date: '09/08/2021', event: 'M. Arnaud', state: 'available'},
-          { week: 'Semaine 33', type: 'Samedi matin', date: '14/08/2021', event: 'M. Arnaud', state: 'available'},
-          { week: 'Semaine 33', type: 'Samedi après-midi', date: '14/08/2021', event: 'M. Arnaud', state: 'available'},
-          { week: 'Semaine 33', type: 'Dimanche matin', date: '15/08/2021', event: 'Fermé', state: 'closed'},
-
-          { week: 'Semaine 34', type: 'Lundi après-midi', date: '09/08/2021', event: 'M. Arnaud', state: 'available'},
-          { week: 'Semaine 34', type: 'Samedi matin', date: '14/08/2021', event: 'M. Arnaud', state: 'available'},
-          { week: 'Semaine 34', type: 'Samedi après-midi', date: '14/08/2021', event: 'M. Arnaud', state: 'available'},
-          { week: 'Semaine 34', type: 'Dimanche matin', date: '15/08/2021', event: 'Fermé', state: 'closed'},
-
-          { week: 'Semaine 35', type: 'Lundi après-midi', date: '09/08/2021', event: 'M. Arnaud', state: 'available'},
-          { week: 'Semaine 35', type: 'Samedi matin', date: '14/08/2021', event: 'N/A', state: 'unavailable'},
-          { week: 'Semaine 35', type: 'Samedi après-midi', date: '14/08/2021', event: 'N/A', state: 'unavailable'},
-          { week: 'Semaine 35', type: 'Dimanche matin', date: '15/08/2021', event: 'Fermé', state: 'closed'},
-
-          { week: 'Semaine 36', type: 'Lundi après-midi', date: '09/08/2021', event: 'M. Arnaud', state: 'available'},
-          { week: 'Semaine 36', type: 'Samedi matin', date: '14/08/2021', event: 'N/A', state: 'unavailable'},
-          { week: 'Semaine 36', type: 'Samedi après-midi', date: '14/08/2021', event: 'N/A', state: 'unavailable'},
-          { week: 'Semaine 36', type: 'Dimanche matin', date: '15/08/2021', event: 'Fermé', state: 'closed'},
-        ]
-      }
+        return {
+          semaines:[],
+          permanences:[]
+        }
     },
-    components: {
-      Permanence
+    methods:{
+        getData() {
+          this.$axios.get('http://localhost:8000/api/permanences', {
+              headers: {
+                  "content-type": "application/json",
+                  "accept": "application/json"
+              }
+          })
+            .then(response => {this.permanences = response.data;
+            console.log(this.permanences);
+            // let tempSemaine = '';
+            this.permanences.forEach(function(permanence) {
+                let tempdate = permanence.date.split(/-|T/);
+                permanence.date = tempdate[2]+"-"+tempdate[1]+"-"+tempdate[0];
+            //     console.log(permanence.semaine);
+            //     console.log(this.semaines);
+            //     if(this.permanences.semaine !== tempSemaine) {
+            //       tempSemaine = this.permanences.semaine;
+            //       this.semaines.push(tempSemaine);
+            //       };
+                })
+            })
+            .catch(err => this.permanences = [{title : "Erreur de chargement"}]);
+        }
     },
-  }
+    mounted: function(){
+        this.getData();
+    }  
+} 
 </script>
 
+
 <style>
+#__layout{
+  background: linear-gradient(to right, #8C1E14, #F2F0D5);
+}
 #planning
 {
+  margin-top: 4px;
   height: 300px;
   overflow-y: scroll;
 }
 #planning>.card
 {
-  margin-top : 4px;
+  margin-top: 4px;
+  padding-top: 4px;
 }
 #carre-blanc
 { 
@@ -112,15 +115,15 @@
   background-color: #818181;
   border: solid 0.5mm #000;
 }
-.unavailable
+.indisponible
 {
   background-color: #f29206;
 }
-.closed
+.ferme
 {
   background-color: #818181;
 }
-.available
+.disponible
 {
   background-color: #fff;
 }

@@ -20,18 +20,28 @@ export default {
         }
     },
     methods: {
-        async submit() {
-            await fetch('http://localhost:8000/api/login', {
-                method: 'POST',
-                header: { 'Content-Type':'application/json' },
-                credentials: 'include',
-                body: JSON.stringify({
-                    email: this.email,
-                    password: this.password
-                })
-            });
+        submit() {
+            // await fetch('http://localhost:8000/api/login', {
+            //     method: 'POST',
+            //     header: { 'Content-Type':'application/json' },
+            //     credentials: 'include',
+            //     body: JSON.stringify({
+            //         email: this.email,
+            //         password: this.password
+            //     })
+            // });
 
-            await this.$router.push('/atelier-indextwo');
+            // await this.$router.push('/atelier-indextwo');
+            this.$axios.post('/token', {
+                email: this.email,
+                password: this.password
+                }).then((resp) => {
+                this.$auth.setToken('local', 'Bearer ' + resp.data.access_token)
+                this.$auth.setRefreshToken('local', resp.data.refresh_token)
+                this.$axios.setHeader('Authorization', 'Bearer ' + resp.data.access_token)
+                this.$auth.ctx.app.$axios.setHeader('Authorization', 'Bearer ' + resp.data.access_token)
+                this.$axios.get('/users/me').then((resp) => { this.$auth.setUser(resp.data); this.$router.push('/') })
+        })
         }
     }
 }
