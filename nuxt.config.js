@@ -19,7 +19,9 @@ export default {
     },
 
     // Global CSS: https://go.nuxtjs.dev/config-css
-    css: [],
+    css: [
+        '~/static/src/css/main'
+    ],
 
     // Plugins to run before rendering page: https://go.nuxtjs.dev/config-plugins
     plugins: [],
@@ -31,6 +33,7 @@ export default {
     buildModules: [
         // Simple usage
         '@nuxtjs/vuetify',
+        '@nuxtjs/color-mode',
     ],
 
     // Modules: https://go.nuxtjs.dev/config-modules
