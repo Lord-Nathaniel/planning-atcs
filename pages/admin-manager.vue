@@ -13,6 +13,10 @@
                 </div>
             </div>
             <h1>Gestion des permanences</h1>
+            <div>
+                <input type="checkbox" id="checkboxShowAllWeeks" v-model="showAllWeeks">                
+                <label for="checkboxShowAllWeeks">Montrer les semaines précédentes</label>
+            </div>
         </section>
         <section id="page-admin-manager" class="card">
             <v-app id="planning-manager">  
@@ -23,8 +27,8 @@
                 </div>
                 <div id="admin-manager">
                     <div class="col">
-                        <div v-for="semaine in semaines" class="row" :class="nbCol">
-                            <p class="d-flex align-items-center justify-content-center"><b>Semaine{{ semaine }}</b></p>
+                        <div v-for="semaine in semaines" class="row" :class="nbCol" v-if="semaine >= currentDate.week || showAllWeeks">
+                            <p class="d-flex align-items-center justify-content-center"><b>Semaine {{ semaine }}</b></p>
                             <div class="card" v-for="permanence in permanences" :semaine="permanence.semaine" :date="permanence.date" :Type="permanence.Type" :Evenement="permanence.Evenement" :class="permanence.Evenement.etat" :key="permanence._id" v-if="permanence.semaine == semaine">
                                 <v-select v-model="permanence.Evenement.id" :items="evenements" :reduce="evenements => evenement.id" name="evenements" item-text="nom" item-value="id" @input="updatePermanence(permanence.id,$event)">
                                 </v-select>
@@ -47,9 +51,13 @@
                         <p>fermeture de l'association</p>
                     </div>
                 </div>
-                <div>
+                <div class="d-flex justify-content-around">
                     <p id="permanences-alert" class="card" v-if="nbIndisponibles > 1">{{ nbIndisponibles }} permanences ne sont pas assurées !</p>
-                    <p id="permanences-alert" class="card" v-if="nbIndisponibles === 1">{{ nbIndisponibles }} permanence n'est pas assurée !</p>
+                    <p id="permanences-alert" class="card" v-if="nbIndisponibles === 1">{{ nbIndisponibles }} permanence n'est pas assurée !</p>  
+                    <div>                  
+                        <v-button id="createNextWeek" class="btn btn-secondary" name="createNextWeek" v-on:click="createNextWeek()">Créer</v-button>
+                        <label for>Créer la semaine suivante</label>
+                    </div>
                 </div>
             </v-app>   
         </section>
@@ -66,6 +74,12 @@ export default {
             permanences:[],
             evenements:[],
             types:[],
+            currentDate:{
+                day:"",
+                week:"",
+                year:"",
+            },
+            showAllWeeks:false,
         }
     },
     methods:{
@@ -124,12 +138,110 @@ export default {
             .catch(function (error) {
                 console.log(error);
             });
+        },
+        getCurrentDate() { //take the current date
+            let date = new Date();
+            this.currentDate.day = date.getDay();
+            this.currentDate.year = date.getFullYear();
+            date = new Date(Date.UTC(date.getFullYear(), date.getMonth(), date.getDate()));
+            date.setUTCDate(date.getUTCDate() + 4 - (date.getUTCDay()||7));
+            let currentYear = new Date(Date.UTC(date.getUTCFullYear(),0,1));
+            let currentWeek = Math.ceil(( ( (date - currentYear) / 86400000) + 1)/7);;
+            this.currentDate.week = currentWeek;
+        },
+        async createNextWeek() { //create X new permanences, with X = nb of Types
+            console.log("createNextWeek started!");
+            //get the nextWeek
+            let nextWeek = this.semaines.slice(-1);
+            nextWeek ++;
+            //get the date, regarding the type's day
+            let nextDays = [];
+            //get the nb of types
+            let nextTypes = [];
+            let currentDateWeek = this.currentDate.week;
+            let currentDateDay = this.currentDate.day;
+            this.types.forEach(function(typ) {
+                if (typ != ""){
+                    console.log(typ.nom);
+                    nextTypes.push("/api/types/" + typ.id);
+                    //to get the date in regard of the day
+                    let regex = /^([\w\-]+)/;
+                    let word = typ.nom.match(regex);
+                    let futureDay ="";
+                    switch (word[0]) {
+                        case "Lundi": 
+                            futureDay = 1;
+                        break;
+                        case "Mardi":
+                            futureDay = 2;
+                        break;
+                        case "Mercredi":
+                            futureDay = 3;
+                        break;
+                        case "Jeudi":
+                            futureDay = 4;
+                        break;
+                        case "Vendredi":
+                            futureDay = 5;
+                        break;
+                        case "Samedi":
+                            futureDay = 6;
+                        break;
+                        case "Dimanche":
+                            futureDay = 0;
+                        break;
+                        default: 
+                            console.log("error");
+                        break;                        
+                    };
+                    //math for having the number of days differing for the requested date
+                    
+                    let diffWeek = nextWeek - currentDateWeek -1;
+                    let diffDay = futureDay - currentDateDay;
+                    if (diffDay === 0){ //if the two days are exactly the same, add one week
+                        diffDay = 7;
+                    };
+                    let totalDiff = diffWeek*7 + diffDay;
+
+                    //adding the date to the array
+                    let futureDate = new Date();
+                    futureDate = new Date(Date.UTC(futureDate.getFullYear(), futureDate.getMonth(), futureDate.getDate()+totalDiff));
+                    nextDays.push(futureDate);
+                }; 
+            });
+            
+            console.log("nextDays :"+nextDays);
+            console.log("nextTypes :"+nextTypes);
+
+
+            for(let i=0; i<nextTypes.length; i++){
+                console.log("nouvelle permanence:")
+                console.log("semaine: "+nextWeek);
+                console.log("date: "+nextDays[i]);
+                console.log("Type: "+nextTypes[i]);
+                console.log("Evenement: "+"/api/evenements/2");
+            };
+            //no need to get the evenement, it is automatically set to "N/A"                  
+            for(let i=0; i<nextTypes.length; i++){
+            await this.$axios.post('http://localhost:8000/api/permanences', {
+                semaine:nextWeek,
+                date: nextDays[i],
+                Type: nextTypes[i],
+                Evenement:"/api/evenements/2"
+            })
+            .then(response => {
+                console.log(response)
+                if (i == nextTypes.length-1){
+                    window.location.reload() }})
+            .catch(error => { console.log(error) });
+            }        
         }
     },
     mounted: function(){
         this.getData();
         this.getEvents();
         this.getTypes();
+        this.getCurrentDate();
     },
     computed: {
         nbIndisponibles: function() {

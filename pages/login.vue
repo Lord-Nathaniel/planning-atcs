@@ -14,8 +14,8 @@
             </div>
             <h1>Identifiez-vous</h1>
         </section> 
-        <section id="page-login" class="card">
-            <div class="form-signin">
+        <section id="page-login">
+            <div id="login" class="card form-signin">
                 <form @submit.prevent="submit">
                     <p>Email d'identification :</p>
                     <input v-model="email" type="email" class="form-control" placeholder="Email" required>
@@ -60,12 +60,17 @@ p
 {
     margin: 8px;
 }
-#page-login 
+#page-login
 {
-    border : solid 1px #000;
+
+}
+#login 
+{
+    
 }
 .form-signin 
 {
+    border: solid 1px #000;
     width: 100%;
     max-width: 330px;
     padding: 15px;
