@@ -7,7 +7,7 @@
                     <nuxt-link to="/admin-manager" class="btn btn-light">
                         Retour sur le gestionnaire
                     </nuxt-link>
-                    <nuxt-link to="/" class="btn btn-light">
+                    <nuxt-link to="/" class="btn btn-light" v:on-click="this.$cookies.set('jwt', 'void', {})">
                         Se déconnecter
                     </nuxt-link>
                 </div>
@@ -48,6 +48,7 @@ export default {
     },
     methods:{
         getData() {
+            this.$axios.setHeader('Authorization', "Bearer "+this.$cookies.get('jwt')); //this line is needed to add the JWT to the header, to proceed to the authentification
             this.$axios.get('http://localhost:8000/api/evenements', {
                 headers: {
                     "content-type": "application/json",
@@ -58,6 +59,7 @@ export default {
             .catch(err => this.evenements = [{title : "Erreur de chargement"}]);
         },
         createEvent() { //create a new evenement => automatically given the 'disponible' state, since the admin will only create new responsibles
+            this.$axios.setHeader('Authorization', "Bearer "+this.$cookies.get('jwt')); //this line is needed to add the JWT to the header, to proceed to the authentification
             this.$axios.post('http://localhost:8000/api/evenements', {
                 nom: this.postname,
                 etat: 'disponible'
@@ -66,6 +68,7 @@ export default {
             .catch(error => { console.log(error) });
         },
         modifyEvent(id,name) { //update the evenement name
+            this.$axios.setHeader('Authorization', "Bearer "+this.$cookies.get('jwt')); //this line is needed to add the JWT to the header, to proceed to the authentification
             this.$axios.put(`http://localhost:8000/api/evenements/${encodeURIComponent(id)}`, {
                 nom: name
             })
@@ -77,11 +80,17 @@ export default {
                 alert('Vous êtes sur le point de supprimer cet utilisateur ! Si vous êtes sûr, rappuyez sur le bouton de suppression');
                 this.warning=false;
             } else {
+                this.$axios.setHeader('Authorization', "Bearer "+this.$cookies.get('jwt')); //this line is needed to add the JWT to the header, to proceed to the authentification
                 this.$axios.delete(`http://localhost:8000/api/evenements/${encodeURIComponent(id)}`)
                 .then(response => { window.location.reload() })
                 .catch(error => { console.log(error) });
             }
         },
+    },
+    created:function(){ //if the admin isn't authenticated, AKA it doesn't have the jwt, redirect it to the main page
+        if (this.$cookies.get('jwt') == 'void') {
+            this.$router.push('/');
+        }
     },
     mounted: function(){
         this.getData();

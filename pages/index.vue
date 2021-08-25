@@ -90,6 +90,9 @@ export default {
         }
     },
     mounted: function(){
+        this.$cookies.set('jwt', 'void', {
+            path:'/'
+        });
         this.getData();        
         this.getTypes();
     },

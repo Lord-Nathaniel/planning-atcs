@@ -4,9 +4,6 @@
             <div class="d-flex justify-content-between align-items-center">
                 <img src="~/static/src/img/logo_atcs.png" alt="logo atcs association de tir de criquebeuf sur seine"/>         
                 <div class="d-flex flex-column">
-                    <nuxt-link to="/admin-manager" class="btn btn-light">
-                        Se connecter
-                    </nuxt-link>
                     <nuxt-link to="/" class="btn btn-light">
                         Retour sur le planning
                     </nuxt-link>
@@ -16,13 +13,12 @@
         </section> 
         <section id="page-login">
             <div id="login" class="card form-signin">
-                <form @submit.prevent="submit">
-                    <p>Email d'identification :</p>
-                    <input v-model="email" type="email" class="form-control" placeholder="Email" required>
-                    <p>Mot de passe :</p>
-                    <input v-model="password" type="password" class="form-control" placeholder="Password" required>
-                    <button class="w-100 btn btn-lg btn-info" type="submit">Sign in</button>
-                </form>
+                <p>Email d'identification :</p>
+                <input v-model="email" type="email" class="form-control" placeholder="Email" required>
+                <p>Mot de passe :</p>
+                <input v-model="password" type="password" class="form-control" placeholder="Password" required>
+                <p id="error-text" v-if="error">Identifiant ou mot de passe incorrect</p>
+                <button class="w-100 btn btn-lg btn-info" type="submit" v-on:click="login()">Sign in</button>                
             </div>
         </section> 
     </div>
@@ -34,22 +30,27 @@ export default {
     name:'Login',
     data() {
         return {
-            email: '',
-            //adminatcs@atcs.fr       @dm1n
-            password: ''
+            email: '', //adminatcs@atcs.fr
+            password: '', //@dm1n
+            jwtoken:'',
+            error:false,
+            messagetext:false,
         }
     },
     methods: {
-        login: function() {
-            this.$store.dispatch('login',{
-            username: this.email,
-            password: this.password,
-            }).then(function (response) {
-            console.log(response);
-            }).catch(function(err) {
-            console.log(err);
-            });
-        }
+        login() {
+            this.$axios.post('http://localhost:8000/api/login', {
+                username: this.email,
+                password: this.password
+            })
+            .then(response => { this.$cookies.set('jwt', response.data.token, {
+                path:'/',
+                maxAge: 60*60*24*7, //one week
+                }); 
+                this.$router.push('/admin-manager');})
+            .catch(error => { this.error = true;
+                console.log(error) });
+        },       
     }  
 }
 </script>
@@ -103,5 +104,8 @@ p
     margin-bottom: 10px;
     border-top-left-radius: 0;
     border-top-right-radius: 0;
+}
+#error-text{
+    color: #f00;
 }
 </style>

@@ -41,9 +41,8 @@ export default {
         'bootstrap-vue/nuxt',
         '@nuxtjs/axios',
         '@nuxtjs/auth',
+        'cookie-universal-nuxt'
     ],
-
-
 
     // Build Configuration: https://go.nuxtjs.dev/config-build
     build: {
@@ -63,7 +62,6 @@ export default {
         cache: true,
         hardSource: true
     },
-
 
     // Axios module configuration: https://go.nuxtjs.dev/config-axios
     axios: {

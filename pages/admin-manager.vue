@@ -7,7 +7,7 @@
                     <nuxt-link to="/admin-list" class="btn btn-light">
                         Aller sur la liste
                     </nuxt-link>
-                    <nuxt-link to="/" class="btn btn-light">
+                    <nuxt-link to="/" class="btn btn-light" v:on-click="this.$cookies.set('jwt', 'void', {})">
                         Se déconnecter
                     </nuxt-link>
                 </div>
@@ -84,6 +84,7 @@ export default {
     },
     methods:{
         getEvents() { //fetch the evenements, save them in data => used to view and modify the evenement of a permanence
+            this.$axios.setHeader('Authorization', "Bearer "+this.$cookies.get('jwt')); //this line is needed to add the JWT to the header, to proceed to the authentification
             this.$axios.get('http://localhost:8000/api/evenements', {
                 headers: {
                     "content-type": "application/json",
@@ -94,6 +95,7 @@ export default {
             .catch(err => this.evenements = [{title : "Erreur de chargement"}]);
         },
         getTypes() { //fetch the evenements, save them in data => used to view and modify the evenement of a permanence            
+            this.$axios.setHeader('Authorization', "Bearer "+this.$cookies.get('jwt')); //this line is needed to add the JWT to the header, to proceed to the authentification
             this.$axios.get('http://localhost:8000/api/types', {
                 headers: {
                     "content-type": "application/json",
@@ -105,6 +107,7 @@ export default {
             .catch(err => this.evenements = [{title : "Erreur de chargement"}]);
         },
         getData() { //fetch the permanences, save them in data, changes the date format => used to view the permanences in the planning
+            this.$axios.setHeader('Authorization', "Bearer "+this.$cookies.get('jwt')); //this line is needed to add the JWT to the header, to proceed to the authentification
             this.$axios.get('http://localhost:8000/api/permanences', {
                 headers: {
                     "content-type": "application/json",
@@ -128,6 +131,7 @@ export default {
         },
         updatePermanence(permanenceid, evenementid) { //update the evenements bindded to a permanence
             let url ="/api/evenements/"+evenementid;
+            this.$axios.setHeader('Authorization', "Bearer "+this.$cookies.get('jwt')); //this line is needed to add the JWT to the header, to proceed to the authentification
             this.$axios.put(`http://localhost:8000/api/permanences/${encodeURIComponent(permanenceid)}`, {
                 
                 Evenement: url
@@ -150,7 +154,6 @@ export default {
             this.currentDate.week = currentWeek;
         },
         async createNextWeek() { //create X new permanences, with X = nb of Types
-            console.log("createNextWeek started!");
             //get the nextWeek
             let nextWeek = this.semaines.slice(-1);
             nextWeek ++;
@@ -162,7 +165,6 @@ export default {
             let currentDateDay = this.currentDate.day;
             this.types.forEach(function(typ) {
                 if (typ != ""){
-                    console.log(typ.nom);
                     nextTypes.push("/api/types/" + typ.id);
                     //to get the date in regard of the day
                     let regex = /^([\w\-]+)/;
@@ -209,20 +211,9 @@ export default {
                     nextDays.push(futureDate);
                 }; 
             });
-            
-            console.log("nextDays :"+nextDays);
-            console.log("nextTypes :"+nextTypes);
-
-
-            for(let i=0; i<nextTypes.length; i++){
-                console.log("nouvelle permanence:")
-                console.log("semaine: "+nextWeek);
-                console.log("date: "+nextDays[i]);
-                console.log("Type: "+nextTypes[i]);
-                console.log("Evenement: "+"/api/evenements/2");
-            };
             //no need to get the evenement, it is automatically set to "N/A"                  
             for(let i=0; i<nextTypes.length; i++){
+            this.$axios.setHeader('Authorization', "Bearer "+this.$cookies.get('jwt')); //this line is needed to add the JWT to the header, to proceed to the authentification
             await this.$axios.post('http://localhost:8000/api/permanences', {
                 semaine:nextWeek,
                 date: nextDays[i],
@@ -230,11 +221,15 @@ export default {
                 Evenement:"/api/evenements/2"
             })
             .then(response => {
-                console.log(response)
                 if (i == nextTypes.length-1){
                     window.location.reload() }})
             .catch(error => { console.log(error) });
             }        
+        }
+    },
+    created:function(){ //if the admin isn't authenticated, AKA it doesn't have the jwt, redirect it to the main page
+        if (this.$cookies.get('jwt') == 'void') { 
+            this.$router.push('/');
         }
     },
     mounted: function(){
